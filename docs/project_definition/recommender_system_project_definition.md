@@ -21,7 +21,7 @@ Almost all the tables have some interesting attributes, but mainly these ones:
 
 ## Methodology
 
-- Data understanding, and 
+- Data understanding, and analysis of the dataset in the recommender system context
 - Preprocess data of the Yelp dataset, for example removing unwanted attributes, different methods might require different preprocessing
 - Split data into training and testing, guaranteeing that on all the models the split is equal (controlled variables)
 - Train a model using each one of the methods, using the train data
