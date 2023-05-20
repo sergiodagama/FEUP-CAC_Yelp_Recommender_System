@@ -13,24 +13,18 @@ rs.build_recommender_system()
 # TEST 1: get top 5 recommendations for 5 different users and check their validity
 number_of_recommendations = 5
 
-# user 1 (id: qVc8ODYU5SZjKXVBgXdI7w, name: Walker)
-user1 = 'qVc8ODYU5SZjKXVBgXdI7w'
+user1 = 'bJ5FtCtZX3ZZacz2_2PJjA'
+user2 = 'nnImk681KaRqUVHlSfZjGQ'
+user3 = '84HvpQDxcHWmbMDfs8IEYw'
 
-# user 2  (id: j14WgRoU_-2ZE1aw1dXrJg, name: Daniel)
-user2 = 'j14WgRoU_-2ZE1aw1dXrJg'
-
-# user 3 (id: , name: )
-# user 4 (id: , name: )
-# user 5 (id: , name: )
-
-users_to_test = [user1]
+users_to_test = [user1, user2, user3]
 
 # using SVD
 print("---------- Using SVD ----------")
 rs.make_recommendations_to_multiple_users(users_to_test, number_of_recommendations)
 
-# using kNN
-print("---------- Using KNN ----------")
+# using KNN
+""" print("---------- Using KNN ----------")
 rs.set_model_type('knn')
 rs.build_recommender_system()
-rs.make_recommendations_to_multiple_users(users_to_test, number_of_recommendations)
+rs.make_recommendations_to_multiple_users(users_to_test, number_of_recommendations) """
