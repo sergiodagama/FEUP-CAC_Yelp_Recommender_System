@@ -1,4 +1,3 @@
-import pickle
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.decomposition import TruncatedSVD
@@ -24,7 +23,17 @@ class RecommenderSystem:
         """
         self.model_type = model_type
         self.load_data()
+        self.preprocess_data()
 
+    def set_model_type(self, model_type):
+        """
+        Set the model type for the RecommenderSystem object.
+
+        Parameters:
+            - model_type (str): The type of model to use for recommendations.
+                                Supported options: 'svd', 'knn'
+        """
+        self.model_type = model_type
 
     def read_file(self, filename):
         """
@@ -37,8 +46,7 @@ class RecommenderSystem:
             The loaded object from the pickled file.
         """
         with open(filename, 'rb') as f:
-            return pickle.load(f)
-
+            return pd.read_pickle(f)
 
     def save_file(self, filename, var):
         """
@@ -52,8 +60,7 @@ class RecommenderSystem:
             None
         """
         with open(filename, 'wb') as f:
-            pickle.dump(var, f)
-
+            pd.to_pickle(var, f)
 
     def load_data(self):
         """
@@ -66,22 +73,24 @@ class RecommenderSystem:
         self.businesses = self.read_file('../data/sample_business.pickle')
 
         # load review data
-        self.businesses = self.read_file('../data/sample_reviews.pickle')
+        self.reviews = self.read_file('../data/sample_reviews.pickle')
 
+    def preprocess_data(self):
+        """
+            Preprocess the data by pivoting the review data to create a user-item matrix.
+        """
+        review_data = pd.DataFrame(self.reviews)
+
+        self.user_item_ratings = review_data.pivot_table(index='user_id', columns='business_id', values='stars', aggfunc='mean', fill_value=0)
+
+        # split the data into training and testing sets
+        self.train_data, self.test_data = train_test_split(self.user_item_ratings, test_size=0.2)
 
     def build_recommender_system(self):
         """
         Build the recommender system by preprocessing the data, splitting into training and testing sets,
         and training the chosen model based on the specified algorithm.
         """
-        # preprocess data
-        review_data = pd.DataFrame(self.reviews)
-        user_item_ratings = review_data.pivot(index='user_id', columns='business_id', values='rating').fillna(0)
-
-        # split the data into training and testing sets
-        self.train_data, self.test_data = train_test_split(user_item_ratings, test_size=0.2)
-
-        # train the model based on the chosen algorithm
         if self.model_type == 'svd':
             self.model = TruncatedSVD(n_components=10)
             self.model.fit(self.train_data)
@@ -91,8 +100,7 @@ class RecommenderSystem:
         else:
             raise ValueError('Invalid model type.')
 
-
-    def make_recommendations(self, user_id):
+    def make_recommendations(self, user_id, number_of_recommendations):
         """
         Make recommendations for a given user based on the trained model.
 
@@ -105,19 +113,68 @@ class RecommenderSystem:
         # preprocess data
         user_ratings = self.train_data.loc[user_id].values.reshape(1, -1)
 
+        # create a DataFrame with the reshaped data and feature names
+        reshaped_data = pd.DataFrame(user_ratings, columns=self.train_data.columns)
+
         # make recommendations for a user
         if self.model_type == 'svd':
-            predicted_ratings = self.model.transform(user_ratings)
-            top_n_indices = predicted_ratings.argsort()[0, ::-1][:5]
+            predicted_ratings = self.model.transform(reshaped_data)
+            top_n_indices = predicted_ratings.argsort()[0, ::-1][:number_of_recommendations]
             recommended_items = self.train_data.columns[top_n_indices]
         elif self.model_type == 'knn':
-            _, indices = self.model.kneighbors(user_ratings)
-            recommended_items = self.train_data.columns[indices.flatten()]
+            _, indices = self.model.kneighbors(reshaped_data)
+            recommended_items = self.train_data.columns[indices.flatten()][:number_of_recommendations]
         else:
             raise ValueError('Invalid model type.')
 
-        # Print the recommended items
-        for item_id in recommended_items:
-            print(item_id)
-
         return recommended_items
+    
+    def get_business_info(self, business_id):
+        """
+        Get the information for a given business.
+
+        Parameters:
+            - business_id (str): The ID of the business for which information is to be retrieved.
+
+        Returns:
+            - business_info (dict): A dictionary containing the information for the given business.
+        """
+        business_info = self.businesses[self.businesses['business_id'] == business_id].to_dict('records')[0]
+        return business_info
+    
+    def get_user_info(self, user_id):
+        """
+        Get the information for a given user.
+
+        Parameters:
+            - user_id (str): The ID of the user for which information is to be retrieved.
+
+        Returns:
+            - user_info (dict): A dictionary containing the information for the given user.
+        """
+        user_info = self.users[self.users['user_id'] == user_id].to_dict('records')[0]
+        return user_info
+
+    def make_recommendations_to_multiple_users(self, users_list, number_of_recommendations):
+        """
+        Make recommendations for a list of users.
+        
+        Parameters:
+            - users_list (list): A list of user IDs for whom recommendations are to be made.
+            - number_of_recommendations (int): The number of recommendations to make for each user.
+            
+        Returns:
+            - None
+        """
+        for user in users_list:
+            user_name = self.get_user_info(user)['name']
+            print("Top {} recommendations for user {}:".format(number_of_recommendations, user_name))
+            print()
+            
+            recommendations = self.make_recommendations(user, number_of_recommendations)
+            for recommendation in recommendations:
+                business_info = self.get_business_info(recommendation)
+                print(business_info['name'])
+                print(business_info['categories'])
+                print()
+            print()
