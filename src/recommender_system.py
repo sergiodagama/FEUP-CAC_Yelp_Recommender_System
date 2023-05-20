@@ -84,7 +84,7 @@ class RecommenderSystem:
         self.user_item_ratings = review_data.pivot_table(index='user_id', columns='business_id', values='stars', aggfunc='mean', fill_value=0)
 
         # split the data into training and testing sets
-        self.train_data, self.test_data = train_test_split(self.user_item_ratings, test_size=0.2)
+        self.train_data, self.test_data = train_test_split(self.user_item_ratings, test_size=0.000000001)
 
     def build_recommender_system(self):
         """
@@ -110,6 +110,7 @@ class RecommenderSystem:
         Returns:
             - recommended_items (list): A list of the top 5 recommended items for the given user.
         """
+
         # preprocess data
         user_ratings = self.train_data.loc[user_id].values.reshape(1, -1)
 
@@ -128,7 +129,7 @@ class RecommenderSystem:
             raise ValueError('Invalid model type.')
 
         return recommended_items
-    
+
     def get_business_info(self, business_id):
         """
         Get the information for a given business.
@@ -141,7 +142,7 @@ class RecommenderSystem:
         """
         business_info = self.businesses[self.businesses['business_id'] == business_id].to_dict('records')[0]
         return business_info
-    
+
     def get_user_info(self, user_id):
         """
         Get the information for a given user.
@@ -155,26 +156,55 @@ class RecommenderSystem:
         user_info = self.users[self.users['user_id'] == user_id].to_dict('records')[0]
         return user_info
 
-    def make_recommendations_to_multiple_users(self, users_list, number_of_recommendations):
+    def make_recommendations_to_multiple_users(self, users_list, number_of_recommendations, verbose=True):
         """
         Make recommendations for a list of users.
-        
+
         Parameters:
             - users_list (list): A list of user IDs for whom recommendations are to be made.
             - number_of_recommendations (int): The number of recommendations to make for each user.
-            
+
         Returns:
             - None
         """
         for user in users_list:
             user_name = self.get_user_info(user)['name']
-            print("Top {} recommendations for user {}:".format(number_of_recommendations, user_name))
-            print()
-            
+            if verbose:
+                print("Top {} recommendations for user {}:".format(number_of_recommendations, user_name))
+                print()
+
             recommendations = self.make_recommendations(user, number_of_recommendations)
             for recommendation in recommendations:
                 business_info = self.get_business_info(recommendation)
-                print(business_info['name'])
-                print(business_info['categories'])
+                if verbose:
+                    print(business_info['name'])
+                    print(business_info['categories'])
+                    print()
+            if verbose:
                 print()
-            print()
+
+    def get_avg_similarity_between_models(self, number_of_users, number_of_recommendations):
+        user_ids = self.users.sample(number_of_users)['user_id']
+        knn_results = []
+        svd_results = []
+
+        print(user_ids)
+
+        for i in user_ids:
+            print("User ID:", i)
+
+            self.set_model_type('svd')
+            self.build_recommender_system()
+            svd_results.append(self.make_recommendations(i, number_of_recommendations))
+
+            self.set_model_type('knn')
+            self.build_recommender_system()
+            knn_results.append(self.make_recommendations(i, number_of_recommendations))
+
+
+        similarity = []
+
+        for i in range(len(knn_results)):
+            similarity.append(len(set(knn_results[i]) & set(svd_results[i])) / float(len(set(knn_results[i]) | set(svd_results[i]))))
+
+        print("Average similarity:", sum(similarity) / float(len(similarity)))
