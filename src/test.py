@@ -31,8 +31,15 @@ rs.make_recommendations_to_multiple_users(users_to_test, number_of_recommendatio
 # TEST 2: check the average similarity between the results returned using SVD and KNN, for 100 random users
 print("---------- Average similarity between SVD and KNN ----------")
 
-rs.get_avg_similarity_between_models(100, 20)
+# rs.get_avg_similarity_between_models(100, 20)
 
 # TEST 3: check the recommendations inside the communities
+print("---------- Recommendations inside the communities ----------")
 
+rs.reviews = rs.read_file('../data/user1_community_reviews.pickle')
+rs.preprocess_data()
+rs.set_model_type('svd')
+rs.build_recommender_system()
+
+rs.make_recommendations_to_multiple_users([user1], number_of_recommendations)
 
