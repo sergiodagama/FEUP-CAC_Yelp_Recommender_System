@@ -60,13 +60,13 @@ class RecommenderSystem:
         Load the user, business, and review data from pickle files.
         """
         # load user data
-        self.users = self.read_file('sample_users.pickle')
+        self.users = self.read_file('../data/sample_users.pickle')
 
         # load business data
-        self.businesses = self.read_file('sample_businesses.pickle')
+        self.businesses = self.read_file('../data/sample_business.pickle')
 
         # load review data
-        self.businesses = self.read_file('sample_reviews.pickle')
+        self.businesses = self.read_file('../data/sample_reviews.pickle')
 
 
     def build_recommender_system(self):
@@ -90,7 +90,7 @@ class RecommenderSystem:
             self.model.fit(self.train_data.values)
         else:
             raise ValueError('Invalid model type.')
-        
+
 
     def make_recommendations(self, user_id):
         """
@@ -121,15 +121,3 @@ class RecommenderSystem:
             print(item_id)
 
         return recommended_items
-
-
-
-import os
-
-current_directory = os.getcwd()
-print("Current working directory:", current_directory)
-
-rs = RecommenderSystem('svd')
-
-rs.build_recommender_system()
-rs.make_recommendations('qVc8ODYU5SZjKXVBgXdI7w')
