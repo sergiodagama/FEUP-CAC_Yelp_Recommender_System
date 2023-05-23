@@ -10,7 +10,7 @@ print("Current working directory:", current_directory)
 rs = RecommenderSystem('svd')
 rs.build_recommender_system()
 
-# TEST 1: get top 3 recommendations for 2 different users and check their validity
+""" # TEST 1: get top 3 recommendations for 2 different users and check their validity
 number_of_recommendations = 5
 
 user1 = 'bJ5FtCtZX3ZZacz2_2PJjA'
@@ -41,5 +41,33 @@ rs.preprocess_data()
 rs.set_model_type('svd')
 rs.build_recommender_system()
 
-rs.make_recommendations_to_multiple_users([user1], number_of_recommendations)
+rs.make_recommendations_to_multiple_users([user1], number_of_recommendations) """
 
+user1 = 'bJ5FtCtZX3ZZacz2_2PJjA'
+
+print("Number of categories: ", rs.count_n_different_categories())
+
+top_ten_relevants = rs.get_top_x_relevant_categories(user1, 10)
+
+print("Top relevants for user Bill: ", top_ten_relevants)
+
+# check if businesses are relevant to a given user (from SVD results)
+print(rs.check_if_a_certain_business_is_relevant_to_user(user1, ["Day Spas", "Beauty & Spas"], top_ten_relevants))
+print(rs.check_if_a_certain_business_is_relevant_to_user(user1, ["American (Traditional)", "Restaurants", "Pizza", "Sandwiches", "Meat Shops", "Food", "Wraps", "Delis", "Specialty Food", "Salad"], top_ten_relevants))
+print(rs.check_if_a_certain_business_is_relevant_to_user(user1, ["Venues & Event Spaces", "Event Planning & Services", "Hotels", "Hotels & Travel"], top_ten_relevants))
+print(rs.check_if_a_certain_business_is_relevant_to_user(user1, ["Cocktail Bars", "Food Delivery Services", "Nightlife", "Breakfast & Brunch", "Food", "Bars", "Event Planning & Services", "Caterers", "Restaurants", "Indian"], top_ten_relevants))
+print(rs.check_if_a_certain_business_is_relevant_to_user(user1, ["Steakhouses", "Seafood", "American (Traditional)", "Restaurants"], top_ten_relevants))
+
+# check if businesses are relevant to a given user (from KNN results)
+print(rs.check_if_a_certain_business_is_relevant_to_user(user1, ["Restaurants", "Pizza"], top_ten_relevants))
+print(rs.check_if_a_certain_business_is_relevant_to_user(user1, ["Shopping", "Cosmetics & Beauty Supply", "Convenience Stores", "Beauty & Spas", "Food", "Drugstores"], top_ten_relevants))
+print(rs.check_if_a_certain_business_is_relevant_to_user(user1, ["Restaurants", "Party & Event Planning", "Event Planning & Services", "Sandwiches", "Cafes", "Spanish", "Breakfast & Brunch"], top_ten_relevants))
+print(rs.check_if_a_certain_business_is_relevant_to_user(user1, ["Wedding Planning", "Transportation", "Party Bus Rentals", "Wineries", "Party & Event Planning", "Local Flavor", "Food", "Wine Tours", "Arts & Entertainment", "Tours", "Limos", "Event Planning & Services", "Hotels & Travel"], top_ten_relevants))
+print(rs.check_if_a_certain_business_is_relevant_to_user(user1, ["Specialty Food", "Salad", "American (New)", "Sandwiches", "Food", "Desserts", "Breakfast & Brunch", "Restaurants", "Cheese Shops"], top_ten_relevants))
+
+# check if businesses are relevant to a given user (from SVD results in GMC community)
+print(rs.check_if_a_certain_business_is_relevant_to_user(user1, ["American (Traditional)", "Restaurants", "Pizza", "Sandwiches", "Meat Shops", "Food", "Wraps", "Delis", "Specialty Food", "Salad"], top_ten_relevants))
+print(rs.check_if_a_certain_business_is_relevant_to_user(user1, ["Shopping", "Flowers & Gifts", "Gift Shops", "Women's Clothing", "Fashion", "Jewelry"], top_ten_relevants))
+print(rs.check_if_a_certain_business_is_relevant_to_user(user1, ["Massage", "Active Life", "Health & Medical", "Fitness & Instruction", "Chiropractors", "Beauty & Spas", "Dance Studios", "Acupuncture", "Yoga"], top_ten_relevants))
+print(rs.check_if_a_certain_business_is_relevant_to_user(user1, ["Arts & Entertainment", "Active Life", "Skating Rinks", "Local Flavor", "Parks", "Music Venues", "Nightlife"], top_ten_relevants))
+print(rs.check_if_a_certain_business_is_relevant_to_user(user1, ["Restaurants", "Sandwiches"], top_ten_relevants))

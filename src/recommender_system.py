@@ -1,7 +1,9 @@
+from collections import Counter
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.decomposition import TruncatedSVD
 from sklearn.neighbors import NearestNeighbors
+import matplotlib.pyplot as plt
 
 
 class RecommenderSystem:
@@ -183,6 +185,24 @@ class RecommenderSystem:
             if verbose:
                 print()
 
+    def count_n_different_categories(self):
+        """
+        Count the number of different categories in the dataset.
+
+        Parameters:
+            - None
+
+        Returns:
+            - len(categories) (int): The number of different categories in the dataset.
+        """
+        categories = set()
+
+        for _, business in self.businesses.iterrows():
+            if business['categories'] is not None:
+                categories.update(business['categories'])
+
+        return len(categories)
+
     def get_avg_similarity_between_models(self, number_of_users, number_of_recommendations):
         user_ids = self.users.sample(number_of_users)['user_id']
         knn_results = []
@@ -208,3 +228,64 @@ class RecommenderSystem:
             similarity.append(len(set(knn_results[i]) & set(svd_results[i])) / float(len(set(knn_results[i]) | set(svd_results[i]))))
 
         print("Average similarity:", sum(similarity) / float(len(similarity)))
+
+    def get_top_x_relevant_categories(self, user_id, x):
+        all_pos_reviews_categories = [] # positive means with 4 or 5 stars
+
+        for _, review in self.reviews.iterrows():
+            if review['user_id'] == user_id and review['stars'] >= 4:
+                business_id = review['business_id']
+                business_info = self.get_business_info(business_id)
+                if business_info['categories'] is not None:
+                    all_pos_reviews_categories.append(business_info['categories'])
+
+        # make a histogram with the all_pos_reviews_categories counts
+        # Count the frequency of each string
+        histogram = {}
+        for item in all_pos_reviews_categories:
+            if item in histogram:
+                histogram[item] += 1
+            else:
+                histogram[item] = 1
+
+        # Extract the unique strings and their frequencies
+        labels = list(histogram.keys())
+        frequencies = list(histogram.values())
+
+        # Create the histogram
+        """ plt.bar(labels, frequencies)
+        plt.xticks(rotation=45)
+
+        # Add labels and title
+        plt.xlabel('Categories the user rated 4 or 5 stars')
+        plt.ylabel('Frequency')
+        plt.title('All Categories of businesses reviewed by user with 4 or 5 Histogram')
+
+        # Display the histogram
+        plt.show() """
+
+        sorted_histogram = sorted(histogram.items(), key=lambda x: x[1], reverse=True)
+
+        labels = [item[0] for item in sorted_histogram[:10]]
+        frequencies = [item[1] for item in sorted_histogram[:10]]
+
+        plt.bar(labels, frequencies)
+        plt.xticks(rotation=20)
+
+        plt.xlabel('Categories the user rated 4 or 5 stars')
+        plt.ylabel('Frequency')
+        plt.title('Top ten Categories of businesses reviewed by user with 4 or 5 Histogram')
+
+        # Display the histogram
+        plt.show()
+
+        # get top x categories in all_pos_reviews_categories
+        return [y[0] for y in sorted(Counter(all_pos_reviews_categories).items(), key=lambda y: y[1], reverse=True)[:x]]
+
+    def check_if_a_certain_business_is_relevant_to_user(self, user_id, business_categories, top_categories):
+        # check if the business_categories are in the top 10 categories
+        for category in top_categories:
+            for business_category in business_categories:
+                if business_category in category:
+                    return True
+        return False
