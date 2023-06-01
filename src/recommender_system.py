@@ -229,7 +229,30 @@ class RecommenderSystem:
 
         print("Average similarity:", sum(similarity) / float(len(similarity)))
 
+    def get_businesses_categories(self, business_id):
+        """
+        Get the categories of a given business.
+
+        Parameters:
+            - business_id (str): The ID of the business for which categories are to be retrieved.
+
+        Returns:
+            - categories (list): A list of categories for the given business.
+        """
+        business_info = self.get_business_info(business_id)
+        return business_info['categories']
+
     def get_top_x_relevant_categories(self, user_id, x):
+        """
+        Get the top x relevant categories for a given user.
+        
+        Parameters:
+            - user_id (str): The ID of the user for which categories are to be retrieved.
+            - x (int): The number of categories to retrieve.  
+        
+        Returns:
+            - top_x_categories (list): A list of the top x relevant categories for the given user.
+        """
         all_pos_reviews_categories = [] # positive means with 4 or 5 stars
 
         for _, review in self.reviews.iterrows():
@@ -264,7 +287,7 @@ class RecommenderSystem:
         # Display the histogram
         plt.show() """
 
-        sorted_histogram = sorted(histogram.items(), key=lambda x: x[1], reverse=True)
+        """sorted_histogram = sorted(histogram.items(), key=lambda x: x[1], reverse=True)
 
         labels = [item[0] for item in sorted_histogram[:10]]
         frequencies = [item[1] for item in sorted_histogram[:10]]
@@ -277,7 +300,7 @@ class RecommenderSystem:
         plt.title('Top ten Categories of businesses reviewed by user with 4 or 5 Histogram')
 
         # Display the histogram
-        plt.show()
+        plt.show() """
 
         # get top x categories in all_pos_reviews_categories
         return [y[0] for y in sorted(Counter(all_pos_reviews_categories).items(), key=lambda y: y[1], reverse=True)[:x]]

@@ -71,3 +71,60 @@ print(rs.check_if_a_certain_business_is_relevant_to_user(user1, ["Shopping", "Fl
 print(rs.check_if_a_certain_business_is_relevant_to_user(user1, ["Massage", "Active Life", "Health & Medical", "Fitness & Instruction", "Chiropractors", "Beauty & Spas", "Dance Studios", "Acupuncture", "Yoga"], top_ten_relevants))
 print(rs.check_if_a_certain_business_is_relevant_to_user(user1, ["Arts & Entertainment", "Active Life", "Skating Rinks", "Local Flavor", "Parks", "Music Venues", "Nightlife"], top_ten_relevants))
 print(rs.check_if_a_certain_business_is_relevant_to_user(user1, ["Restaurants", "Sandwiches"], top_ten_relevants))
+
+# Testing the recommender system with svd and knn with a sample of 100 users
+# rs.get_avg_similarity_between_models(100, 20)
+
+# create a sample of users to test 100, svd
+rs = RecommenderSystem('svd')
+rs.build_recommender_system()
+
+users_to_test = rs.users.sample(100)['user_id']
+number_of_recommendations = 10
+
+precision_per_user = []
+
+for user in users_to_test:
+    recommendations = rs.make_recommendations(user, number_of_recommendations)
+    top_ten_relevants = rs.get_top_x_relevant_categories(user, 5)
+    print("top ten relevants: ", top_ten_relevants)
+
+    results = []
+    for recommendation in recommendations:
+        print("recommendation: ", recommendation)
+        business_categories = rs.get_businesses_categories(recommendation)
+        is_relevant = rs.check_if_a_certain_business_is_relevant_to_user(user, business_categories, top_ten_relevants)
+        results.append(is_relevant)
+
+    precision = results.count(True) / len(results)
+    print("precision: ", precision)
+    precision_per_user.append(precision)
+
+print("Average precision for svd: ", sum(precision_per_user) / len(precision_per_user))
+
+# create a sample of users to test 100, knn
+rs = RecommenderSystem('knn')
+rs.build_recommender_system()
+
+users_to_test = rs.users.sample(100)['user_id']
+number_of_recommendations = 10
+
+precision_per_user = []
+
+for user in users_to_test:
+    recommendations = rs.make_recommendations(user, number_of_recommendations)
+    top_ten_relevants = rs.get_top_x_relevant_categories(user, 5)
+    print("top ten relevants: ", top_ten_relevants)
+
+    results = []
+    for recommendation in recommendations:
+        print("recommendation: ", recommendation)
+        business_categories = rs.get_businesses_categories(recommendation)
+        is_relevant = rs.check_if_a_certain_business_is_relevant_to_user(user, business_categories, top_ten_relevants)
+        results.append(is_relevant)
+
+    precision = results.count(True) / len(results)
+    print("precision: ", precision)
+    precision_per_user.append(precision)
+
+print("Average precision for knn: ", sum(precision_per_user) / len(precision_per_user))
